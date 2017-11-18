@@ -1,9 +1,9 @@
-#install.packages("doMC")
-#install.packages("gtools")
-#install.packages("tictoc")
-#install.packages("ggplot2")
-#install.packages("gridExtra")
-#install.packages("gplots")
+install.packages("doMC")
+install.packages("gtools")
+install.packages("tictoc")
+install.packages("ggplot2")
+install.packages("gridExtra")
+install.packages("gplots")
 
 
 # clean up varialble
@@ -111,7 +111,7 @@ for(i in 1:MaxCheapest){
 
 # Sort and get cheapest supplier from a single supplier to [number of pieces] suppliers
 best <- as.data.frame(matrix(NA, 0, length(suppliers) + 2))
-best <- foreach (i= 1:length(pieces), .combine=rbind) %dopar%{
+best <- foreach (i= 1:min(length(suppliers),length(pieces)), .combine=rbind) %dopar%{
   tmp <- totals[totals$nOfSuppliers == i, ]
   tmp <- tmp[order(tmp$price), ]
   tmp[1:MaxCheapest, ]
