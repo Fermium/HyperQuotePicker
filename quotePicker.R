@@ -1,9 +1,9 @@
-install.packages("doMC")
-install.packages("gtools")
-install.packages("tictoc")
-install.packages("ggplot2")
-install.packages("gridExtra")
-install.packages("gplots")
+#install.packages("doMC")
+#install.packages("gtools")
+#install.packages("tictoc")
+#install.packages("ggplot2")
+#install.packages("gridExtra")
+#install.packages("gplots")
 
 
 # clean up varialble
@@ -12,7 +12,7 @@ rm(list = ls())
 #### CONFIG
 CPUCores <- 8
 MaxCheapest <- 3 # Max number of cheapest lines for each amount of suppliers to shop display
-inputFileName <- "quote.csv"
+inputFileName <- "example.csv"
 outputFileName <- "best.csv"
 outputGraphsFileName <- "bests.pdf"
 
@@ -80,8 +80,7 @@ sprintf(
 )
 
 # Calculate the total price for each combination
-totals <- as.data.frame(matrix(NA, 0, length(suppliers) + 2))
-
+totals <- as.data.frame(matrix(NA, dim(x)[1], length(suppliers) + 2))
 totals <- foreach (j=1:dim(x)[1], .combine=rbind) %dopar% {
   tot <- 0
   supps <- c()
