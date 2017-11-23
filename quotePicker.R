@@ -4,13 +4,14 @@
 #install.packages("ggplot2")
 #install.packages("gridExtra")
 #install.packages("gplots")
+#install.packages("data.table")
 
 
 # clean up varialble
 rm(list = ls())
 
 #### CONFIG
-CPUCores <- 8
+CPUCores <- 32
 MaxCheapest <- 3 # Max number of cheapest lines for each amount of suppliers to shop display
 inputFileName <- "example.csv"
 outputFileName <- "best.csv"
@@ -27,6 +28,8 @@ require(ggplot2)
 library(gridExtra)
 library(gplots)
 require(compiler)
+require(data.table)
+
 enableJIT(3)
 tic()
 
@@ -81,7 +84,7 @@ sprintf(
 
 # Calculate the total price for each combination
 totals <- as.data.frame(matrix(NA, dim(x)[1], length(suppliers) + 2))
-totals <- foreach (j=1:dim(x)[1], .combine=rbind) %dopar% {
+totals <- foreach (j=1:dim(x)[1], .combine=function(...) rbindlist(list(...)), .multicombine = TRUE) %dopar% {
   tot <- 0
   supps <- c()
   i <- 1
@@ -94,6 +97,10 @@ totals <- foreach (j=1:dim(x)[1], .combine=rbind) %dopar% {
   }
   cbind(tot, length(unique(supps)), as.data.frame(rrow))
 }
+# convert back to data.frame
+totals <- as.data.frame(totals)
+
+
 
 #Rename columns
 colnames(totals) <- c('price', 'nOfSuppliers', levels(pieces))
