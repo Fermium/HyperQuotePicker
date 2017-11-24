@@ -61,7 +61,7 @@ quoteData$Price <- as.numeric(gsub('[$,€]', '', quoteData$Price))
 quoteData$Tot <- as.numeric(gsub('[$,€]', '', quoteData$Tot))
 
 # The piece list contains every piece possible suppliers and prices
-pieceList <-split(quoteData,quoteData$Piece)
+pieceList <-split(quoteData,quoteData$Piece) %>% lapply(.,function(x){x[!is.na(x$Price),]})
 
 #Generate all possible combinations of pieces and suppliers
 #These are only indexes, and will need to be threated accordingl
@@ -75,21 +75,22 @@ x <-
     repeats.allowed = T
   )
 
-sprintf(
-  "there are a total of %d supplier for %d pieces for a total of %d combinations",
-  amountOfSuppliers,
-  amountOfPieces,
-  nrow(x)
-)
+
 registerDoMC(CPUCores)
 # Calculate the total price for each combination
+actualSuppliers<-sapply(pieceList,nrow)
 means<-lapply(pieceList,function(pp){mean(pp$Tot)})
+x<-x[apply(x,1,function(y){all(y<=actualSuppliers)}),]
+sprintf("Total combinations: %d",nrow(x))
 totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% {
+
   if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means)){
   tot <- sum(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,],SIMPLIFY = T))
   supps <- mapply(function(pp,index,i){pp$Supplier[index[i]]},pieceList,x[j,],SIMPLIFY =T)
-  c(tot, length(unique(supps)),supps)
- }
+
+ c(tot, length(unique(supps)),supps)
+  }
+
 } %>% as_tibble(.)
 
 #Rename columns
