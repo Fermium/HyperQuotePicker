@@ -49,8 +49,8 @@ quoteData <- read.csv(inputFileName)
 suppliers <- unique(quoteData$Supplier)
 pieces <- unique(quoteData$Piece)
 
-grid.table((suppliers))
-grid.table(pieces)
+#grid.table((suppliers))
+#grid.table(pieces)
 
 
 #Only take the first five colums
@@ -83,10 +83,13 @@ sprintf(
 )
 registerDoMC(CPUCores)
 # Calculate the total price for each combination
+means<-lapply(pieceList,function(pp){mean(pp$Tot)})
 totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% {
+  if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means)){
   tot <- sum(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,],SIMPLIFY = T))
   supps <- mapply(function(pp,index,i){pp$Supplier[index[i]]},pieceList,x[j,],SIMPLIFY =T)
   c(tot, length(unique(supps)),supps)
+ }
 } %>% as_tibble(.)
 
 #Rename columns
