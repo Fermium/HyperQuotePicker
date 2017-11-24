@@ -75,16 +75,16 @@ x <-
     repeats.allowed = T
   )
 
-
 registerDoMC(CPUCores)
 # Calculate the total price for each combination
 actualSuppliers<-sapply(pieceList,nrow)
-means<-lapply(pieceList,function(pp){mean(pp$Tot)})
+means<-lapply(pieceList,function(pp){unname(quantile(pp$Tot,.75))})
+sds<-lapply(pieceList,function(pp){sd(pp$Tot)})
 x<-x[apply(x,1,function(y){all(y<=actualSuppliers)}),]
 sprintf("Total combinations: %d",nrow(x))
 totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% {
 
-  if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means)){
+  if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means+sds)){
   tot <- sum(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,],SIMPLIFY = T))
   supps <- mapply(function(pp,index,i){pp$Supplier[index[i]]},pieceList,x[j,],SIMPLIFY =T)
 
@@ -97,7 +97,8 @@ totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% 
 colnames(totals) <- c('price', 'nOfSuppliers', levels(pieces))
 
 
-p <- ggplot(totals, aes(x=price)) + geom_histogram(binwidth=25) +  ggtitle(sprintf("output for ALL suppliers"))
+p <- ggplot(totals, aes(x=price)) + geom_histogram(binwidth=25)+  ggtitle(sprintf("output for ALL suppliers"))
+
 print(p, newpage = TRUE)
 for(i in 1:MaxCheapest){
   tmp <- totals[totals$nOfSuppliers == i, ]
@@ -107,7 +108,6 @@ for(i in 1:MaxCheapest){
 }
 
 # Sort and get cheapest supplier from a single supplier to [number of pieces] suppliers
-best <- as.data.frame(matrix(NA, 0, length(suppliers) + 2))
 best <- foreach (i= 1:min(length(suppliers),length(pieces)), .combine=rbind) %dopar%{
   tmp <- totals[totals$nOfSuppliers == i, ]
   tmp<-tmp[order(tmp$price), ]  
