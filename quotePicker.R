@@ -78,13 +78,13 @@ x <-
 registerDoMC(CPUCores)
 # Calculate the total price for each combination
 actualSuppliers<-sapply(pieceList,nrow)
-means<-lapply(pieceList,function(pp){unname(quantile(pp$Tot,.75))})
-sds<-lapply(pieceList,function(pp){sd(pp$Tot)})
+means<-unname(unlist(lapply(pieceList,function(pp){unname(quantile(pp$Tot,.75))})))
+
 x<-x[apply(x,1,function(y){all(y<=actualSuppliers)}),]
 sprintf("Total combinations: %d",nrow(x))
 totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% {
 
-  if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means+sds)){
+  if(all(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,])<means)){
   tot <- sum(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,],SIMPLIFY = T))
   supps <- mapply(function(pp,index,i){pp$Supplier[index[i]]},pieceList,x[j,],SIMPLIFY =T)
 
