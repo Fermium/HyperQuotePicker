@@ -1,6 +1,8 @@
 #Install missing requirements and load them
 rm(list = ls())
-reqpackages <- c("doMC","gtools","tictoc","ggplot2","gridExtra","gplots","data.table","foreach","compiler","future","optparse","purrr","tibble")
+reqpackages <- c(
+  "doMC",
+  "gtools","tictoc","ggplot2","gridExtra","gplots","data.table","foreach","compiler","future","optparse","purrr","tibble","doSNOW")
 new.packages <- reqpackages[!(reqpackages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(reqpackages, require, character.only = TRUE)
@@ -69,9 +71,9 @@ sprintf(
   amountOfPieces,
   nrow(x)
 )
-
+registerDoMC(CPUCores)
 # Calculate the total price for each combination
-totals <- foreach (j=1:dim(x)[1], .combine=function(...) rbind(...), .multicombine = TRUE) %dopar% {
+totals <- foreach (j=1:dim(x)[1], .combine=rbind, .multicombine = TRUE) %dopar% {
   tot <- sum(mapply(function(pp,index,i){pp$Tot[index[i]]},pieceList,x[j,],SIMPLIFY = T))
   supps <- mapply(function(pp,index,i){pp$Supplier[index[i]]},pieceList,x[j,],SIMPLIFY =T)
   c(tot, length(unique(supps)),supps)
