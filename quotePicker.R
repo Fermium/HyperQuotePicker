@@ -2,7 +2,17 @@
 rm(list = ls())
 reqpackages <- c(
   "doMC",
-  "gtools","tictoc","ggplot2","gridExtra","gplots","data.table","foreach","compiler","future","optparse","purrr","tibble","doSNOW")
+  "gtools",
+  "tictoc",
+  "ggplot2",
+  "data.table",
+  "foreach",
+  "compiler",
+  "future",
+  "optparse",
+  "purrr",
+  "tibble"
+  )
 new.packages <- reqpackages[!(reqpackages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(reqpackages, require, character.only = TRUE)
