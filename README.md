@@ -41,8 +41,9 @@ source("qutePicker.R")
 
 # This software is slow, why?
 
-Because it is. Computing all possible combinations is a O(n!) problem, one of the slowest possible types. You're going to need a powerful computer even for 20 suppliers and 5 pieces. We usually run it on a 32 core machine.
+Because it is made in the stupidest way possible. Computing all possible combinations is a O(n!) problem, one of the slowest possible types. You're going to need a powerful computer even for 20 suppliers and 5 pieces. We usually run it on a 32 core machine.
+
+The right way to do this is using a linear algebra solver. 
 
 The code can be adapted with just a couple of lines to run in a cluster.
 
-It's also not optimized. Currently, the heavy lifting is done using data.frame, a very inefficient datatype.
